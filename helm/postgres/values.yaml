@@ -108,15 +108,16 @@ postgresVersion: 15
 # For example, to set up an instance set with HA (due to the default pod
 # topology spread constraints)
 #
-# instances:
-#   - name: pgha1
-#     replicas: 2
-#     dataVolumeClaimSpec:
-#       accessModes:
-#       - "ReadWriteOnce"
-#       resources:
-#         requests:
-#           storage: 1Gi
+instances:
+  - name: pgha1
+    replicas: 3
+    dataVolumeClaimSpec:
+      storageClassName: standard
+      accessModes:
+      - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: 1Gi
 # instances: {}
 
 # port sets the port that Postgres listens on. Defaults to 5432.

@@ -1,0 +1,16 @@
+https://access.crunchydata.com/documentation/postgres-operator/v5/quickstart/
+
+export KUBECONFIG=~/.kube/config/minikube.yaml
+export KUBECONFIG=~/.kube/config/production.yaml
+helm upgrade --install pg-cluster -n contacts helm/install
+helm upgrade --install pg-instances -n contacts helm/postgres
+helm delete pg-instances -n contacts
+helm delete pg-cluster -n contacts
+
+
+kkubectl get secret pg-instances-pguser-pg-instances -o jsonpath='{.data}' -n contacts
+kubectl port-forward service/pg-instances-primary 6432:5432 -n contacts
+
+PG_CLUSTER_PRIMARY_POD=$(kubectl get pod -n postgres-operator -o name \
+  -l postgres-operator.crunchydata.com/cluster=hippo,postgres-operator.crunchydata.com/role=master)
+kubectl -n postgres-operator port-forward "${PG_CLUSTER_PRIMARY_POD}" 5432:5432
