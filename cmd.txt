@@ -14,3 +14,23 @@ kubectl port-forward service/pg-instances-primary 6432:5432 -n contacts
 PG_CLUSTER_PRIMARY_POD=$(kubectl get pod -n postgres-operator -o name \
   -l postgres-operator.crunchydata.com/cluster=hippo,postgres-operator.crunchydata.com/role=master)
 kubectl -n postgres-operator port-forward "${PG_CLUSTER_PRIMARY_POD}" 5432:5432
+
+kubectl create namespace contacts
+
+kubectl apply -k kustomize/install/namespace
+kubectl apply --server-side -k kustomize/install/default
+kubectl apply -k kustomize/high-availability
+kubectl delete -k kustomize/high-availability
+
+
+Connect
+PG_CLUSTER_PRIMARY_POD=$(kubectl get pod \
+  -n contacts \
+  -o name \
+  -l postgres-operator.crunchydata.com/cluster=hippo-ha,postgres-operator.crunchydata.com/role=master)
+
+kubectl -n contacts port-forward "${PG_CLUSTER_PRIMARY_POD}" 5432:5432
+
+kubectl get secrets -n contacts "hippo-ha-pguser-hippo-ha" -o go-template='{{.data.password | base64decode}}'
+kubectl get secrets -n contacts "hippo-ha-pguser-hippo-ha" -o go-template='{{.data.user | base64decode}}'
+kubectl get secrets -n contacts "hippo-ha-pguser-hippo-ha" -o go-template='{{.data.dbname | base64decode}}'
